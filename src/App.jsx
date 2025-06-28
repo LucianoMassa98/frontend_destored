@@ -35,12 +35,12 @@ function App() {
         >
           <ul className="flex flex-col lg:flex-row lg:gap-8 text-xl font-semibold text-white">
             <li>
-              <Link to="/login" className="flex items-center px-3 py-2 rounded-md text-xl font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition duration-300 ease-in-out">
+              <Link to="/login" className="flex items-center px-3 py-2 rounded-md text-xl font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition duration-300 ease-in-out" onClick={toggleMenu}>
                 <LogIn className="mr-2" size={20} /> Iniciar Sesión
               </Link>
             </li>
             <li className="mt-2 lg:mt-0">
-              <Link to="/register" className="flex items-center px-3 py-2 rounded-md text-xl font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition duration-300 ease-in-out">
+              <Link to="/register" className="flex items-center px-3 py-2 rounded-md text-xl font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition duration-300 ease-in-out" onClick={toggleMenu}>
                 <UserPlus className="mr-2" size={20} /> Registrarse
               </Link>
             </li>
