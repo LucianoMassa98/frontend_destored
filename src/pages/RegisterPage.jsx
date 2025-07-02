@@ -7,17 +7,26 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [rol, setRol] = useState('');
+    const [firstname, setFirstname] = useState('');
+    const [lastname, setLastname] = useState('');
+    const [username, setUsername] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [errors, setErrors] = useState({});
 
-    // Update: Use the correct aliases returned by the hook
-    const { loading, error, responseData, register } = useRegister();
+    // Usar registerBasic para compatibilidad con el formulario actual
+    const { loading, error, responseData, registerBasic } = useRegister();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Basic validation
-        if (!email || !password || !confirmPassword || !rol || password !== confirmPassword) {
-            setErrors({ form: 'Por favor, complete todos los campos y asegúrese de que las contraseñas coincidan.' });
+        
+        // Validación básica
+        if (!email || !password || !confirmPassword || !rol || !firstname || !lastname) {
+            setErrors({ form: 'Por favor, complete todos los campos obligatorios.' });
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setErrors({ form: 'Las contraseñas no coinciden.' });
             return;
         }
 
@@ -26,9 +35,24 @@ export default function RegisterPage() {
             return;
         }
 
+        try {
+            // Mapear el rol del formulario al valor esperado por la API
+            const rolApi = rol === 'Profesional Digital' ? 'profesional' : 'usuario';
+            
+            // Generar username si no se proporciona
+            const usernameToUse = username || email.split('@')[0];
 
-        // Update: Call the register function returned by the hook
-        register(email, password, rol);
+            await registerBasic(email, password, rolApi, {
+                firstname,
+                lastname,
+                username: usernameToUse
+            });
+
+            // Limpiar errores si el registro es exitoso
+            setErrors({});
+        } catch (err) {
+            console.error('Error durante el registro:', err);
+        }
     };
 
     return (
@@ -38,10 +62,97 @@ export default function RegisterPage() {
                     <h2 className="text-3xl font-extrabold mb-8 text-center text-white">
                         Registrarse
                     </h2>
-                    <form>
+                    <form onSubmit={handleSubmit}>
+                        {/* Campo Nombre */}
+                        <div className="mb-4">
+                            <label className="block text-white text-base font-semibold mb-2" htmlFor="firstname">
+                                Nombre *
+                            </label>
+                            <div className="relative">
+                                <input
+                                    className={`shadow appearance-none border rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-2 ${touched.firstname && errors.firstname ? 'border-red-500 focus:ring-red-500' : 'focus:ring-[#8b5cf6]'
+                                        } bg-[#283a5e] placeholder-gray-400 text-lg`}
+                                    id="firstname"
+                                    type="text"
+                                    placeholder="Tu nombre"
+                                    value={firstname}
+                                    onChange={(e) => setFirstname(e.target.value)}
+                                    onBlur={() => {
+                                        setTouched({ ...touched, firstname: true });
+                                        if (!firstname) {
+                                            setErrors({ ...errors, firstname: 'El nombre es requerido.' });
+                                        } else {
+                                            const newErrors = { ...errors };
+                                            delete newErrors.firstname;
+                                            setErrors(newErrors);
+                                        }
+                                    }}
+                                />
+                                {touched.firstname && errors.firstname && (
+                                    <div style={{ backgroundColor: 'red' }} className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 text-white text-xs rounded tooltip">
+                                        {errors.firstname}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Campo Apellido */}
+                        <div className="mb-4">
+                            <label className="block text-white text-base font-semibold mb-2" htmlFor="lastname">
+                                Apellido *
+                            </label>
+                            <div className="relative">
+                                <input
+                                    className={`shadow appearance-none border rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-2 ${touched.lastname && errors.lastname ? 'border-red-500 focus:ring-red-500' : 'focus:ring-[#8b5cf6]'
+                                        } bg-[#283a5e] placeholder-gray-400 text-lg`}
+                                    id="lastname"
+                                    type="text"
+                                    placeholder="Tu apellido"
+                                    value={lastname}
+                                    onChange={(e) => setLastname(e.target.value)}
+                                    onBlur={() => {
+                                        setTouched({ ...touched, lastname: true });
+                                        if (!lastname) {
+                                            setErrors({ ...errors, lastname: 'El apellido es requerido.' });
+                                        } else {
+                                            const newErrors = { ...errors };
+                                            delete newErrors.lastname;
+                                            setErrors(newErrors);
+                                        }
+                                    }}
+                                />
+                                {touched.lastname && errors.lastname && (
+                                    <div style={{ backgroundColor: 'red' }} className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 text-white text-xs rounded tooltip">
+                                        {errors.lastname}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Campo Username (opcional) */}
+                        <div className="mb-4">
+                            <label className="block text-white text-base font-semibold mb-2" htmlFor="username">
+                                Nombre de usuario (opcional)
+                            </label>
+                            <div className="relative">
+                                <input
+                                    className={`shadow appearance-none border rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] bg-[#283a5e] placeholder-gray-400 text-lg`}
+                                    id="username"
+                                    type="text"
+                                    placeholder="Nombre de usuario único"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                                <small className="text-gray-400 text-xs">
+                                    Si no se proporciona, se usará la parte del email antes del @
+                                </small>
+                            </div>
+                        </div>
+
+                        {/* Campo Email */}
                         <div className="mb-4">
                             <label className="block text-white text-base font-semibold mb-2" htmlFor="email">
-                                Correo electrónico
+                                Correo electrónico *
                             </label>
                             <div className="relative">
                                 <input
@@ -73,13 +184,14 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
+                        {/* Campo Contraseña */}
                         <div className="mb-4">
                             <label className="block text-white text-base font-semibold mb-2" htmlFor="password">
-                                Contraseña
+                                Contraseña *
                             </label>
                             <div className="relative">
                                 <input
-                                    className={`shadow appearance-none border rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-2 ${touched.password && errors.password ? 'border-red-500 focus:ring-red-500' : 'focus:ring-[#8b5cf6]'
+                                    className={`shadow appearance-none border rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-2 ${touched.password && (errors.password || passwordError) ? 'border-red-500 focus:ring-red-500' : 'focus:ring-[#8b5cf6]'
                                         } bg-[#283a5e] placeholder-gray-400 text-lg`}
                                     id="password"
                                     type="password"
@@ -102,22 +214,24 @@ export default function RegisterPage() {
                                             setPasswordError('La contraseña debe contener al menos un símbolo.');
                                         } else {
                                             setPasswordError('');
-                                            const newErrors = { ...errors }; // Clear other password errors if any
+                                            const newErrors = { ...errors };
+                                            delete newErrors.password;
                                             setErrors(newErrors);
                                         }
                                     }}
                                 />
-                                {touched.password && errors.password && (
+                                {touched.password && (errors.password || passwordError) && (
                                     <div style={{ backgroundColor: 'red' }} className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 text-white text-xs rounded tooltip">
-                                        {errors.password}
+                                        {errors.password || passwordError}
                                     </div>
                                 )}
                             </div>
                         </div>
 
+                        {/* Campo Confirmar Contraseña */}
                         <div className="mb-4">
                             <label className="block text-white text-base font-semibold mb-2" htmlFor="confirmPassword">
-                                Confirmar Contraseña
+                                Confirmar Contraseña *
                             </label>
                             <div className="relative">
                                 <input
@@ -149,9 +263,10 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
+                        {/* Campo Rol */}
                         <div className="mb-4">
                             <label className="block text-white text-base font-semibold mb-2" htmlFor="rol">
-                                Rol
+                                Rol *
                             </label>
                             <div className="relative">
                                 <select
@@ -184,23 +299,34 @@ export default function RegisterPage() {
 
                         <div className="flex flex-col items-center justify-center">
                             <button
-                                className="bg-[#8b5cf6] hover:bg-[#7c4dff] text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105 text-lg w-full"
-                                type="button"
-                                onClick={handleSubmit}
+                                className="bg-[#8b5cf6] hover:bg-[#7c4dff] text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105 text-lg w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                type="submit"
                                 disabled={loading}
                             >
                                 {loading ? 'Registrando...' : 'Registrarse'}
                             </button>
+                            
+                            {/* Errores generales */}
+                            {errors.form && (
+                                <div className="text-red-500 text-sm mt-2 text-center">
+                                    {errors.form}
+                                </div>
+                            )}
+                            
+                            {/* Error del hook */}
                             {error && (
-                                <div className="text-red-500 text-sm mt-2">
+                                <div className="text-red-500 text-sm mt-2 text-center">
                                     Error al registrar: {error.message || 'Algo salió mal'}
                                 </div>
                             )}
-                            {responseData && responseData.message && (
-                                <div className="text-green-500 text-sm mt-2">
-                                    {data.message}
+                            
+                            {/* Mensaje de éxito */}
+                            {responseData && (
+                                <div className="text-green-500 text-sm mt-2 text-center">
+                                    ¡Registro exitoso! {responseData.message || 'Usuario registrado correctamente'}
                                 </div>
                             )}
+                            
                             <a className="inline-block align-baseline font-semibold text-sm text-[#8b5cf6] hover:text-[#7c4dff] transition duration-300 ease-in-out mt-4" href="login">
                                 ¿Ya tienes una cuenta? Inicia sesión
                             </a>
