@@ -10,6 +10,7 @@ export default function RegisterPage() {
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
     const [username, setUsername] = useState('');
+    const [urlPortafolio, setUrlPortafolio] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [errors, setErrors] = useState({});
 
@@ -42,11 +43,19 @@ export default function RegisterPage() {
             // Generar username si no se proporciona
             const usernameToUse = username || email.split('@')[0];
 
-            await registerBasic(email, password, rolApi, {
+            // Datos adicionales para el registro
+            const additionalData = {
                 firstname,
                 lastname,
                 username: usernameToUse
-            });
+            };
+
+            // Si es profesional y tiene URL de portafolio, incluirla
+            if (rolApi === 'profesional' && urlPortafolio) {
+                additionalData.urlPortafolio = urlPortafolio;
+            }
+
+            await registerBasic(email, password, rolApi, additionalData);
 
             // Limpiar errores si el registro es exitoso
             setErrors({});
@@ -148,6 +157,44 @@ export default function RegisterPage() {
                                 </small>
                             </div>
                         </div>
+
+                        {/* Campo URL Portafolio (solo para profesionales) */}
+                        {rol === 'Profesional Digital' && (
+                            <div className="mb-4">
+                                <label className="block text-white text-base font-semibold mb-2" htmlFor="urlPortafolio">
+                                    URL del Portafolio (opcional)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        className={`shadow appearance-none border rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-2 ${touched.urlPortafolio && errors.urlPortafolio ? 'border-red-500 focus:ring-red-500' : 'focus:ring-[#8b5cf6]'
+                                            } bg-[#283a5e] placeholder-gray-400 text-lg`}
+                                        id="urlPortafolio"
+                                        type="url"
+                                        placeholder="https://tu-portafolio.com"
+                                        value={urlPortafolio}
+                                        onChange={(e) => setUrlPortafolio(e.target.value)}
+                                        onBlur={() => {
+                                            setTouched({ ...touched, urlPortafolio: true });
+                                            if (urlPortafolio && !/^https?:\/\/.+\..+/.test(urlPortafolio)) {
+                                                setErrors({ ...errors, urlPortafolio: 'Debe ser una URL válida (ej: https://tu-sitio.com)' });
+                                            } else {
+                                                const newErrors = { ...errors };
+                                                delete newErrors.urlPortafolio;
+                                                setErrors(newErrors);
+                                            }
+                                        }}
+                                    />
+                                    {touched.urlPortafolio && errors.urlPortafolio && (
+                                        <div style={{ backgroundColor: 'red' }} className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 text-white text-xs rounded tooltip">
+                                            {errors.urlPortafolio}
+                                        </div>
+                                    )}
+                                    <small className="text-gray-400 text-xs">
+                                        Si no tienes portafolio aún, puedes dejarlo vacío y actualizarlo después
+                                    </small>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Campo Email */}
                         <div className="mb-4">

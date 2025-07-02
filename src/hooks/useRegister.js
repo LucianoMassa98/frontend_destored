@@ -35,7 +35,7 @@ const useRegister = () => {
         
         // Campos específicos para profesionales
         ...(userData.rol === 'profesional' && {
-          urlPortafolio: userData.urlPortafolio || '',
+          urlPortafolio: userData.urlPortafolio || 'https://portfolio-pendiente.com',
           disponibilidad: userData.disponibilidad !== undefined ? userData.disponibilidad : true,
           tarifaHora: userData.tarifaHora || 0,
           nivelSeniority: userData.nivelSeniority || 'Junior',
@@ -43,9 +43,9 @@ const useRegister = () => {
           estadoAutorizacion: userData.estadoAutorizacion || 'pending',
           puntuacion: userData.puntuacion || 0,
           
-          // Campos de autorización
+          // Campos de autorización - usar Date object en lugar de string
           autorizadoPorAdminId: userData.autorizadoPorAdminId || 0,
-          fechaAutorizacion: userData.fechaAutorizacion || new Date().toISOString(),
+          fechaAutorizacion: userData.fechaAutorizacion || new Date(),
           administradorAutorizador: userData.administradorAutorizador || '',
           usuariosAutorizados: userData.usuariosAutorizados || [],
           
