@@ -43,9 +43,8 @@ const useRegister = () => {
           estadoAutorizacion: userData.estadoAutorizacion || 'pending',
           puntuacion: userData.puntuacion || 0,
           
-          // Campos de autorización - usar Date object en lugar de string
+          // Campos de autorización - intentar diferentes formatos
           autorizadoPorAdminId: userData.autorizadoPorAdminId || 0,
-          fechaAutorizacion: userData.fechaAutorizacion || new Date(),
           administradorAutorizador: userData.administradorAutorizador || '',
           usuariosAutorizados: userData.usuariosAutorizados || [],
           
@@ -59,12 +58,24 @@ const useRegister = () => {
         })
       };
 
+      // Manejar fechaAutorizacion solo para profesionales
+      if (userData.rol === 'profesional') {
+        // Solo incluir fechaAutorizacion si se proporciona explícitamente
+        // De lo contrario, dejar que la API la genere automáticamente
+        if (userData.fechaAutorizacion) {
+          userPayload.fechaAutorizacion = userData.fechaAutorizacion;
+        }
+        // Si no se proporciona, no incluir el campo y dejar que la API lo maneje
+      }
+
       // Remover campos undefined para evitar problemas
       Object.keys(userPayload).forEach(key => {
         if (userPayload[key] === undefined) {
           delete userPayload[key];
         }
       });
+
+      console.log('Payload being sent:', JSON.stringify(userPayload, null, 2)); // Para debug
 
       const response = await fetch('https://destored-backend-production.up.railway.app/api/v1/user', {
         method: 'POST',

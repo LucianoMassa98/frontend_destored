@@ -152,7 +152,7 @@ export default function RegisterPage() {
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
-                                <small className="text-gray-400 text-xs">
+                                <small className="text-white text-xs">
                                     Si no se proporciona, se usará la parte del email antes del @
                                 </small>
                             </div>
@@ -189,7 +189,7 @@ export default function RegisterPage() {
                                             {errors.urlPortafolio}
                                         </div>
                                     )}
-                                    <small className="text-gray-400 text-xs">
+                                    <small className="text-xs text-white">
                                         Si no tienes portafolio aún, puedes dejarlo vacío y actualizarlo después
                                     </small>
                                 </div>
