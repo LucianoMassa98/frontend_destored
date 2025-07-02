@@ -7,6 +7,7 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [rol, setRol] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const [errors, setErrors] = useState({});
 
     // Update: Use the correct aliases returned by the hook
@@ -17,10 +18,17 @@ export default function RegisterPage() {
         // Basic validation
         if (!email || !password || !confirmPassword || !rol || password !== confirmPassword) {
             setErrors({ form: 'Por favor, complete todos los campos y asegúrese de que las contraseñas coincidan.' });
- return;
+            return;
         }
+
+        if (passwordError) {
+            setErrors({ ...errors, password: passwordError });
+            return;
+        }
+
+
         // Update: Call the register function returned by the hook
- register(email, password, rol);
+        register(email, password, rol);
     };
 
     return (
@@ -81,10 +89,20 @@ export default function RegisterPage() {
                                     onBlur={() => {
                                         setTouched({ ...touched, password: true });
                                         if (!password) {
-                                            setErrors({ ...errors, password: 'La contraseña es requerida.' });
+                                            setPasswordError('La contraseña es requerida.');
+                                        } else if (password.length < 8) {
+                                            setPasswordError('La contraseña debe tener al menos 8 caracteres.');
+                                        } else if (!/(?=.*[a-z])/.test(password)) {
+                                            setPasswordError('La contraseña debe contener al menos una letra minúscula.');
+                                        } else if (!/(?=.*[A-Z])/.test(password)) {
+                                            setPasswordError('La contraseña debe contener al menos una letra mayúscula.');
+                                        } else if (!/(?=.*\d)/.test(password)) {
+                                            setPasswordError('La contraseña debe contener al menos un número.');
+                                        } else if (!/(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/.test(password)) {
+                                            setPasswordError('La contraseña debe contener al menos un símbolo.');
                                         } else {
-                                            const newErrors = { ...errors };
-                                            delete newErrors.password;
+                                            setPasswordError('');
+                                            const newErrors = { ...errors }; // Clear other password errors if any
                                             setErrors(newErrors);
                                         }
                                     }}
