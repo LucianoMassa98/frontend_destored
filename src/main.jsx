@@ -78,7 +78,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'dashboard',
+        path: 'admin/dashboard',
         element: (
           <ProtectedRoute requiredRole="Admini">
             <Dashboard />
