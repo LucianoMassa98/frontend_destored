@@ -11,62 +11,14 @@ const useRegister = () => {
     setData(null);
 
     try {
-      // Estructura completa del usuario según la API
+      // Solo enviar los datos obligatorios: email, password, rol
       const userPayload = {
-        // Campos básicos requeridos
-        username: userData.username || '',
-        firstname: userData.firstname || '',
-        lastname: userData.lastname || '',
         email: userData.email,
         password: userData.password,
-        rol: userData.rol,
-        
-        // Campos con valores por defecto
-        isActive: userData.isActive !== undefined ? userData.isActive : true,
-        emailConfirm: userData.emailConfirm !== undefined ? userData.emailConfirm : false,
-        
-        // Tech Stack (solo para profesionales)
-        techStack: userData.rol === 'profesional' ? {
-          frontend: userData.techStack?.frontend || [],
-          backend: userData.techStack?.backend || [],
-          database: userData.techStack?.database || [],
-          devOps: userData.techStack?.devOps || []
-        } : undefined,
-        
-        // Campos específicos para profesionales
-        ...(userData.rol === 'profesional' && {
-          urlPortafolio: userData.urlPortafolio || 'https://portfolio-pendiente.com',
-          disponibilidad: userData.disponibilidad !== undefined ? userData.disponibilidad : true,
-          tarifaHora: userData.tarifaHora || 0,
-          nivelSeniority: userData.nivelSeniority || 'Junior',
-          notasEntrevistaTecnica: userData.notasEntrevistaTecnica || '',
-          estadoAutorizacion: userData.estadoAutorizacion || 'pending',
-          puntuacion: userData.puntuacion || 0,
-          
-          // Campos de autorización - intentar diferentes formatos
-          autorizadoPorAdminId: userData.autorizadoPorAdminId || 0,
-          administradorAutorizador: userData.administradorAutorizador || '',
-          usuariosAutorizados: userData.usuariosAutorizados || [],
-          
-          // Arrays relacionados (inicialmente vacíos)
-          proyectosCreados: [],
-          capacitacionMentorias: [],
-          planesCreados: [],
-          planesAdquiridos: [],
-          proyectosAsignados: [],
-          proyectosSupervisados: []
-        })
+        rol: userData.rol
       };
 
-      // Manejar fechaAutorizacion solo para profesionales
-      if (userData.rol === 'profesional') {
-        // Solo incluir fechaAutorizacion si se proporciona explícitamente
-        // De lo contrario, dejar que la API la genere automáticamente
-        if (userData.fechaAutorizacion) {
-          userPayload.fechaAutorizacion = userData.fechaAutorizacion;
-        }
-        // Si no se proporciona, no incluir el campo y dejar que la API lo maneje
-      }
+   
 
       // Remover campos undefined para evitar problemas
       Object.keys(userPayload).forEach(key => {
@@ -100,17 +52,12 @@ const useRegister = () => {
   };
 
   // Función simplificada para usuarios básicos (no profesionales)
-  const registerBasicUser = async (email, password, rol, additionalData = {}) => {
+  const registerBasicUser = async (email, password, rol) => {
     const userData = {
       email,
       password,
-      rol,
-      username: additionalData.username || email.split('@')[0], // username por defecto
-      firstname: additionalData.firstname || '',
-      lastname: additionalData.lastname || '',
-      ...additionalData
+      rol
     };
-    
     return registerUser(userData);
   };
 

@@ -5,10 +5,10 @@ import useLogin from './../hooks/useLogin';
 import { useAuth } from '../utils/AuthContext';
 
 const roleRoutes = {
-  Admin: '/admin/dashboard',
-  Manager: '/manager/dashboard',
-  Staff: '/staff/home',
-  Cliente: '/cliente/home'
+  admin: '/admin/dashboard',
+  gerencia: '/gerencia/dashboard',
+  profesional: '/profesional/home',
+  cliente: '/cliente/home'
 };
 
 export default function LoginPage() {

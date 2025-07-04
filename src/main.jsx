@@ -11,6 +11,9 @@ import { AuthProvider, useAuth } from './utils/AuthContext.jsx';
 
 // Pages
 import Dashboard from './pages/Admin/Dashboard.jsx';
+import GerenciaDashboard from './pages/Gerencia/Dashboard.jsx';
+import ProfesionalHome from './pages/Profesional/Home.jsx';
+import ClienteHome from './pages/Cliente/Home.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 
@@ -45,10 +48,48 @@ function AuthenticatedRoute({ children }) {
   if (loading) return <Loader />;
 
   if (user) {
-    return <Navigate to={user.rol === 'Admini' ? '/dashboard' : '/'} replace />;
+    // Redirigir según el rol del usuario
+    switch (user.rol) {
+      case 'admin':
+        return <Navigate to="/admin/dashboard" replace />;
+      case 'gerencia':
+        return <Navigate to="/gerencia/dashboard" replace />;
+      case 'profesional':
+        return <Navigate to="/profesional/home" replace />;
+      case 'cliente':
+        return <Navigate to="/cliente/home" replace />;
+      default:
+        return <Navigate to="/login" replace />;
+    }
   }
 
   return children;
+}
+
+// Componente para manejar la ruta raíz
+function RootRedirect() {
+  const { user, loading } = useAuth();
+
+  if (loading) return <Loader />;
+
+  if (user) {
+    // Si el usuario está autenticado, redirigir según su rol
+    switch (user.rol) {
+      case 'admin':
+        return <Navigate to="/admin/dashboard" replace />;
+      case 'gerencia':
+        return <Navigate to="/gerencia/dashboard" replace />;
+      case 'profesional':
+        return <Navigate to="/profesional/home" replace />;
+      case 'cliente':
+        return <Navigate to="/cliente/home" replace />;
+      default:
+        return <Navigate to="/login" replace />;
+    }
+  }
+
+  // Si no está autenticado, mostrar login
+  return <Navigate to="/login" replace />;
 }
 
 // Definición de rutas
@@ -59,7 +100,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <LoginPage />,
+        element: <RootRedirect />,
       },
       {
         path: 'register',
@@ -80,8 +121,32 @@ const router = createBrowserRouter([
       {
         path: 'admin/dashboard',
         element: (
-          <ProtectedRoute requiredRole="Admini">
+          <ProtectedRoute requiredRole="admin">
             <Dashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'gerencia/dashboard',
+        element: (
+          <ProtectedRoute requiredRole="gerencia">
+            <GerenciaDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profesional/home',
+        element: (
+          <ProtectedRoute requiredRole="profesional">
+            <ProfesionalHome />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'cliente/home',
+        element: (
+          <ProtectedRoute requiredRole="cliente">
+            <ClienteHome />
           </ProtectedRoute>
         ),
       },
