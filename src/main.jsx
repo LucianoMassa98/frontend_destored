@@ -9,48 +9,41 @@ import {
 } from 'react-router-dom';
 import { AuthProvider, useAuth } from './utils/AuthContext.jsx';
 
-// Import your page components
-import HomePage from './pages/HomePage.jsx';
+// Pages
 import Dashboard from './pages/Admin/Dashboard.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 
+// Loader centralizado
+function Loader() {
+  return (
+    <div className="flex-grow flex items-center justify-center h-full">
+      <div className="text-white">Cargando...</div>
+    </div>
+  );
+}
+
+// Protección por autenticación + rol
 function ProtectedRoute({ children, requiredRole }) {
   const { user, loading } = useAuth();
 
-  // Show loading spinner while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Cargando...</div>
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
-  // Check if user is authenticated and has the required role
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
   if (requiredRole && user.rol !== requiredRole) {
-    return <Navigate to="/" replace />; // Redirect to home if wrong role
+    return <Navigate to="/" replace />;
   }
 
   return children;
 }
 
+// Evitar acceso si ya está autenticado
 function AuthenticatedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Cargando...</div>
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
-  // If user is already logged in, redirect to dashboard or home
   if (user) {
     return <Navigate to={user.rol === 'Admini' ? '/dashboard' : '/'} replace />;
   }
@@ -58,6 +51,7 @@ function AuthenticatedRoute({ children }) {
   return children;
 }
 
+// Definición de rutas
 const router = createBrowserRouter([
   {
     path: '/',
@@ -65,7 +59,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <LoginPage />,
       },
       {
         path: 'register',
@@ -83,7 +77,6 @@ const router = createBrowserRouter([
           </AuthenticatedRoute>
         ),
       },
-      // Protected route for admin dashboard
       {
         path: 'dashboard',
         element: (
@@ -92,19 +85,19 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      // Add more protected routes as needed
       {
         path: '*',
         element: <Navigate to="/" replace />,
-      }
+      },
     ],
   },
 ]);
 
+// Render app
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
-  </StrictMode>,
+  </StrictMode>
 );
