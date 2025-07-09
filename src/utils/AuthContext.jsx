@@ -23,7 +23,11 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         
         if (savedUser && token) {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          console.log('Usuario cargado desde localStorage:', parsedUser);
+        } else {
+          console.log('No hay datos de usuario en localStorage');
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -35,16 +39,20 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    checkAuthStatus();
+    // Añadir un pequeño delay para asegurar que localStorage esté disponible
+    const timer = setTimeout(checkAuthStatus, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const login = (userData, accessToken) => {
+    console.log('Login realizado con:', userData);
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', accessToken);
   };
 
   const logout = () => {
+    console.log('Logout realizado');
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -57,6 +65,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user,
   };
+
+  console.log('AuthContext state:', { user: !!user, loading, isAuthenticated: !!user });
 
   return (
     <AuthContext.Provider value={value}>
