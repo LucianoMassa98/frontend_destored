@@ -25,8 +25,13 @@ export const AuthProvider = ({ children }) => {
         
         if (savedUser && token && authService.isTokenValid()) {
           const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-          console.log('Usuario cargado desde localStorage:', parsedUser);
+          // Asegurar que el usuario tenga una estructura mínima válida
+          const validUser = {
+            ...parsedUser,
+            role: parsedUser.role || 'client'
+          };
+          setUser(validUser);
+          console.log('Usuario cargado desde localStorage:', validUser);
         } else {
           console.log('No hay sesión válida o token expirado');
           // Intentar refrescar token si existe refresh token
@@ -39,7 +44,13 @@ export const AuthProvider = ({ children }) => {
                 // Recargar datos del usuario si es necesario
                 const savedUser = localStorage.getItem('user');
                 if (savedUser) {
-                  setUser(JSON.parse(savedUser));
+                  const parsedUser = JSON.parse(savedUser);
+                  // Asegurar que el usuario tenga una estructura mínima válida
+                  const validUser = {
+                    ...parsedUser,
+                    role: parsedUser.role || 'client'
+                  };
+                  setUser(validUser);
                 }
               }
             } catch (error) {
@@ -79,13 +90,19 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 'success' && response.data) {
         const { user, accessToken, refreshToken } = response.data;
         
+        // Asegurar que el usuario tenga una estructura mínima válida
+        const validUser = {
+          ...user,
+          role: user.role || 'client'
+        };
+        
         // Guardar tokens
         authService.saveTokens(accessToken, refreshToken);
         
         // Guardar datos del usuario
-        setUser(user);
-        localStorage.setItem('user', JSON.stringify(user));
-        console.log('Login exitoso:', user);
+        setUser(validUser);
+        localStorage.setItem('user', JSON.stringify(validUser));
+        console.log('Login exitoso:', validUser);
         
         return response;
       } else {

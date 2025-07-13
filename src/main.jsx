@@ -36,7 +36,7 @@ function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/login" replace />;
   }
 
-  const userRole = user.role.toLowerCase();
+  const userRole = user.role?.toLowerCase() || 'client';
   
   if (requiredRole && userRole !== requiredRole) {
     console.log(`Rol incorrecto. Requerido: ${requiredRole}, Usuario: ${userRole}`);
@@ -54,7 +54,7 @@ function AuthenticatedRoute({ children }) {
 
   if (user) {
     // Redirigir según el rol del usuario
-    const role = user.role.toLowerCase();
+    const role = user.role?.toLowerCase() || 'client';
     switch (role) {
       case 'admin':
         return <Navigate to="/admin/dashboard" replace />;
@@ -80,7 +80,7 @@ function RootRedirect() {
 
   if (user) {
     // Si el usuario está autenticado, redirigir según su rol
-    switch (user.role.toLowerCase()) {
+    switch (user.role?.toLowerCase() || 'client') {
       case 'admin':
         return <Navigate to="/admin/dashboard" replace />;
       case 'gerencia':

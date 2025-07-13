@@ -1,19 +1,19 @@
 // services/authService.js
 
-const mode = import.meta.env.MODE || 'development';
+const mode = import.meta.env.VITE_MODE || 'development';
 
 // Configuración de la URL base según el modo
 
 var API_URL;
 if(mode === 'development') {
-  console.log('Modo de desarrollo: usando API_URL:', import.meta.env.DEV_API_URL);
-  API_URL = import.meta.env.DEV_API_URL; 
+  console.log('Modo de desarrollo: usando API_URL:', import.meta.env.VITE_DEV_API_URL);
+  API_URL = import.meta.env.VITE_DEV_API_URL; 
 } else if(mode === 'test') {
-  console.log('Modo de prueba: usando API_URL:', import.meta.env.TEST_API_URL);
-  API_URL = import.meta.env.TEST_API_URL;
+  console.log('Modo de prueba: usando API_URL:', import.meta.env.VITE_TEST_API_URL);
+  API_URL = import.meta.env.VITE_TEST_API_URL;
 } else {
-  console.log('Modo de producción: usando API_URL:', import.meta.env.PROD_API_URL);
-  API_URL = import.meta.env.PROD_API_URL;
+  console.log('Modo de producción: usando API_URL:', import.meta.env.VITE_PROD_API_URL);
+  API_URL = import.meta.env.VITE_PROD_API_URL;
 } 
 
 
@@ -45,12 +45,30 @@ class AuthService {
       console.log('Configuración de petición:', config);
       
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      // Verificar si la respuesta tiene contenido antes de parsear JSON
+      let data = null;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            console.error('Error parsing JSON:', parseError, 'Response text:', text);
+            data = { message: 'Error parsing server response' };
+          }
+        }
+      } else {
+        const text = await response.text();
+        data = { message: text || `HTTP error! status: ${response.status}` };
+      }
 
       console.log(`Respuesta de ${endpoint}:`, { status: response.status, data });
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(data?.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;
