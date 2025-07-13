@@ -30,15 +30,16 @@ function Loader() {
 function ProtectedRoute({ children, requiredRole }) {
   const { user, loading } = useAuth();
 
-
   if (loading) return <Loader />;
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user.rol.toLowerCase() !== requiredRole) {
-    console.log(`Rol incorrecto. Requerido: ${requiredRole}, Usuario: ${user.rol.toLowerCase()}`);
+  const userRole = user.role.toLowerCase();
+  
+  if (requiredRole && userRole !== requiredRole) {
+    console.log(`Rol incorrecto. Requerido: ${requiredRole}, Usuario: ${userRole}`);
     return <Navigate to="/" replace />;
   }
 
@@ -53,15 +54,15 @@ function AuthenticatedRoute({ children }) {
 
   if (user) {
     // Redirigir según el rol del usuario
-    const rol = user.rol.toLowerCase();
-    switch (rol) {
+    const role = user.role.toLowerCase();
+    switch (role) {
       case 'admin':
         return <Navigate to="/admin/dashboard" replace />;
       case 'gerencia':
         return <Navigate to="/gerencia/dashboard" replace />;
-      case 'profesional':
+      case 'professional':
         return <Navigate to="/profesional/home" replace />;
-      case 'cliente':
+      case 'client':
         return <Navigate to="/cliente/home" replace />;
       default:
         return <Navigate to="/login" replace />;
@@ -79,14 +80,14 @@ function RootRedirect() {
 
   if (user) {
     // Si el usuario está autenticado, redirigir según su rol
-    switch (user.rol.toLowerCase()) {
+    switch (user.role.toLowerCase()) {
       case 'admin':
         return <Navigate to="/admin/dashboard" replace />;
       case 'gerencia':
         return <Navigate to="/gerencia/dashboard" replace />;
-      case 'profesional':
+      case 'professional':
         return <Navigate to="/profesional/home" replace />;
-      case 'cliente':
+      case 'client':
         return <Navigate to="/cliente/home" replace />;
       default:
         return <Navigate to="/login" replace />;
@@ -142,7 +143,7 @@ const router = createBrowserRouter([
       {
         path: 'profesional/home',
         element: (
-          <ProtectedRoute requiredRole="profesional">
+          <ProtectedRoute requiredRole="professional">
             <ProfesionalHome />
           </ProtectedRoute>
         ),
@@ -150,7 +151,7 @@ const router = createBrowserRouter([
       {
         path: 'cliente/home',
         element: (
-          <ProtectedRoute requiredRole="cliente">
+          <ProtectedRoute requiredRole="client">
             <ClienteHome />
           </ProtectedRoute>
         ),

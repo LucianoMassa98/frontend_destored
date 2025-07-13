@@ -1,41 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useAuth } from '../utils/AuthContext';
 
-const useLogin = (email, password) => {
-  const [responseData, setResponseData] = useState(null);
-  const [error, setError] = useState(null);
+const useLogin = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { login } = useAuth();
 
-  useEffect(() => {
-    const login = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('https://destored-backend-production.up.railway.app/api/v1/user/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setResponseData(data);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (email && password) {
-      login();
+  const loginUser = async (credentials) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await login(credentials);
+      return response;
+    } catch (err) {
+      setError(err.message || 'Error en el login');
+      throw err;
+    } finally {
+      setLoading(false);
     }
-  }, [email, password]);
+  };
 
-  return { responseData, error, loading, userRole: responseData?.user?.rol };
+  return { loginUser, loading, error };
 };
 
 export default useLogin;

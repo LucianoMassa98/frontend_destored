@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import useLogin from './../hooks/useLogin';
+import useLogin from '../hooks/useLogin';
 import { useAuth } from '../utils/AuthContext';
 
 const roleRoutes = {
   admin: '/admin/dashboard',
   gerencia: '/gerencia/dashboard',
-  profesional: '/profesional/home',
-  cliente: '/cliente/home'
+  professional: '/profesional/home',
+  client: '/cliente/home'
 };
 
 export default function LoginPage() {
@@ -17,42 +17,41 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loginTrigger, setLoginTrigger] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const { loading, error, responseData } = useLogin(
-    loginTrigger ? email : '',
-    loginTrigger ? password : ''
-  );
-
-  const { login } = useAuth();
+  const { loginUser, loading, error } = useLogin();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e && e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    // Validar campos antes de disparar login
-    if (email && password && !errors.email && !errors.password) {
-      setLoginTrigger(true);
+    // Validar campos antes de enviar
+    if (!email || !password || errors.email || errors.password) {
+      setTouched({ email: true, password: true });
+      return;
+    }
+
+    try {
+      const response = await loginUser({
+        email,
+        password,
+        rememberMe
+      });
+
+      if (response && response.user) {
+        redirectByRole(response.user);
+      }
+    } catch (err) {
+      console.error('Error en login:', err);
     }
   };
-
-  useEffect(() => {
-    if (responseData || error) {
-      setLoginTrigger(false);
-    }
-  }, [responseData, error]);
 
   const redirectByRole = (user) => {
-    const path = roleRoutes[user.rol] || '/';
+    const userRole = user.role; // Usar directamente el rol de la API
+    const path = roleRoutes[userRole] || '/';
     navigate(path);
   };
-
-  useEffect(() => {
-    if (responseData && responseData.user) {
-      login(responseData.user, responseData.accessToken);
-      redirectByRole(responseData.user);
-    }
-  }, [responseData, login, navigate]);
 
   return (
     <div className="flex flex-col flex-grow h-full min-h-screen items-center justify-center bg-gradient-to-br from-[#1a1a2e] via-[#283a5e] to-[#8b5cf6] px-2 relative overflow-hidden">
@@ -159,6 +158,19 @@ export default function LoginPage() {
               )}
             </div>
 
+            <div className="flex items-center">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-[#8b5cf6] focus:ring-[#8b5cf6] border-gray-300 rounded"
+              />
+              <label htmlFor="rememberMe" className="ml-2 block text-sm text-white">
+                Recordarme
+              </label>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -184,7 +196,7 @@ export default function LoginPage() {
 
             {error && (
               <div className="mt-4 p-3 bg-red-500 text-white text-sm rounded text-center shadow">
-                Error al iniciar sesión: {error.message || 'Credenciales inválidas'}
+                Error al iniciar sesión: {error}
               </div>
             )}
           </form>

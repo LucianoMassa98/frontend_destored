@@ -1,62 +1,37 @@
 import { useState } from 'react';
+import { useAuth } from '../utils/AuthContext';
 
 const useRegister = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
+  const { register } = useAuth();
 
   const registerUser = async (userData) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
     setData(null);
 
     try {
-      // Solo enviar los datos obligatorios: email, password, rol
-      const userPayload = {
-        email: userData.email,
-        password: userData.password,
-        rol: userData.rol
-      };
-
-   
-
-      // Remover campos undefined para evitar problemas
-      Object.keys(userPayload).forEach(key => {
-        if (userPayload[key] === undefined) {
-          delete userPayload[key];
-        }
-      });
-
-      console.log('Payload being sent:', JSON.stringify(userPayload, null, 2)); // Para debug
-
-      const response = await fetch('https://destored-backend-production.up.railway.app/api/v1/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userPayload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Registration failed');
-      }
-
-      setData(result);
+      const response = await register(userData);
+      setData(response);
+      return response;
     } catch (err) {
-      setError(err);
+      setError(err.message || 'Error en el registro');
+      throw err;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Función simplificada para usuarios básicos (no profesionales)
-  const registerBasicUser = async (email, password, rol) => {
+  // Función simplificada para usuarios básicos
+  const registerBasicUser = async (email, password, role = 'client') => {
     const userData = {
       email,
       password,
-      rol
+      confirmPassword: password,
+      role,
+      acceptTerms: true,
     };
     return registerUser(userData);
   };
@@ -65,7 +40,8 @@ const useRegister = () => {
   const registerProfessional = async (professionalData) => {
     const userData = {
       ...professionalData,
-      rol: 'profesional'
+      role: 'professional',
+      acceptTerms: true,
     };
     
     return registerUser(userData);
@@ -73,9 +49,9 @@ const useRegister = () => {
 
   return { 
     register: registerUser,           // Registro completo con objeto userData
-    registerBasic: registerBasicUser, // Registro básico (compatible con tu implementación actual)
+    registerBasic: registerBasicUser, // Registro básico
     registerProfessional,            // Registro específico para profesionales
-    loading: isLoading,
+    loading,
     error, 
     responseData: data
   };
