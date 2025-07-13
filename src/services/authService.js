@@ -1,5 +1,21 @@
 // services/authService.js
-const API_URL = import.meta.env.VITE_API_URL || 'https://api-destored.up.railway.app';
+
+const mode = import.meta.env.MODE || 'development';
+
+// Configuración de la URL base según el modo
+
+var API_URL;
+if(mode === 'development') {
+  console.log('Modo de desarrollo: usando API_URL:', import.meta.env.DEV_API_URL);
+  API_URL = import.meta.env.DEV_API_URL; 
+} else if(mode === 'test') {
+  console.log('Modo de prueba: usando API_URL:', import.meta.env.TEST_API_URL);
+  API_URL = import.meta.env.TEST_API_URL;
+} else {
+  console.log('Modo de producción: usando API_URL:', import.meta.env.PROD_API_URL);
+  API_URL = import.meta.env.PROD_API_URL;
+} 
+
 
 class AuthService {
   constructor() {
