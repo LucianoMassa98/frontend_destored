@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useLogin from '../hooks/useLogin';
 import { useAuth } from '../utils/AuthContext';
 
@@ -8,20 +8,39 @@ const roleRoutes = {
   admin: '/admin/dashboard',
   gerencia: '/gerencia/dashboard',
   professional: '/profesional/home',
-  client: '/cliente/home'
+  profesional: '/profesional/home',
+  client: '/cliente/home',
+  cliente: '/cliente/home'
 };
 
 export default function LoginPage() {
+  const location = useLocation();
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const { loginUser, loading, error } = useLogin();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Manejar mensaje de éxito del registro
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      if (location.state.email) {
+        setEmail(location.state.email);
+      }
+      // Limpiar el mensaje después de 5 segundos
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -76,6 +95,12 @@ export default function LoginPage() {
           <h2 className="text-3xl font-extrabold mb-6 text-center text-white drop-shadow">
             Iniciar Sesión
           </h2>
+
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-500/20 border border-green-500 text-green-300 text-sm rounded-lg text-center shadow">
+              {successMessage}
+            </div>
+          )}
 
           <form className="w-full max-w-md mx-auto space-y-6" onSubmit={handleLogin}>
             <div>
@@ -181,7 +206,7 @@ export default function LoginPage() {
 
             <div className="flex flex-col md:flex-row justify-between items-center mt-2 gap-2">
               <a
-                href="/recuperar"
+                href="/forgot-password"
                 className="text-[#8b5cf6] hover:text-[#7c4dff] font-semibold text-sm transition"
               >
                 ¿Olvidaste tu contraseña?
@@ -191,6 +216,15 @@ export default function LoginPage() {
                 className="text-[#8b5cf6] hover:text-[#7c4dff] font-semibold text-sm transition"
               >
                 ¿No tienes cuenta? Regístrate
+              </a>
+            </div>
+
+            <div className="text-center mt-2">
+              <a
+                href="/resend-verification"
+                className="text-sm text-gray-400 hover:text-[#8b5cf6] transition"
+              >
+                ¿No recibiste el email de verificación?
               </a>
             </div>
 

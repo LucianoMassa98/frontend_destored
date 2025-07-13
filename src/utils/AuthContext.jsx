@@ -1,5 +1,5 @@
 // contexts/AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import authService from '../services/authService';
 
 const AuthContext = createContext();
@@ -15,6 +15,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const refreshIntervalRef = useRef(null);
 
   // Check for existing session on app startup
   useEffect(() => {
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
           // Asegurar que el usuario tenga una estructura mínima válida
           const validUser = {
             ...parsedUser,
-            role: parsedUser.role || 'client'
+            role: parsedUser.role
           };
           setUser(validUser);
           console.log('Usuario cargado desde localStorage:', validUser);
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }) => {
                   // Asegurar que el usuario tenga una estructura mínima válida
                   const validUser = {
                     ...parsedUser,
-                    role: parsedUser.role || 'client'
+                    role: parsedUser.role
                   };
                   setUser(validUser);
                 }
@@ -79,6 +80,103 @@ export const AuthProvider = ({ children }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Error en logout:', error);
+    } finally {
+      console.log('Logout realizado');
+      setUser(null);
+      authService.clearTokens();
+      localStorage.removeItem('user');
+      // Limpiar intervalo de refresh
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    }
+  };
+
+  // Token refresh automático
+  useEffect(() => {
+    if (!user) {
+      // Si no hay usuario, limpiar el intervalo
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const refreshTokenAutomatic = async () => {
+      try {
+        const currentRefreshToken = authService.getRefreshToken();
+        
+        if (!currentRefreshToken) {
+          console.log('No hay refresh token disponible');
+          logout();
+          return;
+        }
+
+        console.log('Intentando refrescar token automáticamente...');
+        const response = await authService.refreshToken(currentRefreshToken);
+        
+        if (response && response.accessToken) {
+          authService.saveTokens(response.accessToken, response.refreshToken || currentRefreshToken);
+          console.log('Token refrescado exitosamente');
+        } else {
+          console.log('No se pudo refrescar el token');
+          logout();
+        }
+      } catch (error) {
+        console.error('Error refrescando token automáticamente:', error);
+        // Si el refresh falla, hacer logout
+        logout();
+      }
+    };
+
+    const checkTokenExpiration = () => {
+      const token = authService.getToken();
+      
+      if (!token) {
+        logout();
+        return;
+      }
+
+      try {
+        // Intentar decodificar el token JWT
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          const currentTime = Date.now() / 1000;
+          const timeUntilExpiry = payload.exp - currentTime;
+          
+          // Si el token expira en menos de 5 minutos, refrescarlo
+          if (timeUntilExpiry < 300) { // 5 minutos
+            console.log('Token expira pronto, refrescando automáticamente...');
+            refreshTokenAutomatic();
+          }
+        }
+      } catch (error) {
+        console.error('Error verificando expiración del token:', error);
+      }
+    };
+
+    // Verificar inmediatamente al montar
+    checkTokenExpiration();
+
+    // Configurar intervalo para verificar cada 4 minutos
+    refreshIntervalRef.current = setInterval(checkTokenExpiration, 4 * 60 * 1000);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
+  }, [user]);
+
   const login = async (credentials) => {
     try {
       setLoading(true);
@@ -93,7 +191,7 @@ export const AuthProvider = ({ children }) => {
         // Asegurar que el usuario tenga una estructura mínima válida
         const validUser = {
           ...user,
-          role: user.role || 'client'
+          role: user.role
         };
         
         // Guardar tokens
@@ -115,19 +213,6 @@ export const AuthProvider = ({ children }) => {
       throw error;
     } finally {
       setLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await authService.logout();
-    } catch (error) {
-      console.error('Error en logout:', error);
-    } finally {
-      console.log('Logout realizado');
-      setUser(null);
-      authService.clearTokens();
-      localStorage.removeItem('user');
     }
   };
 

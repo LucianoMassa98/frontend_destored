@@ -68,7 +68,26 @@ class AuthService {
       console.log(`Respuesta de ${endpoint}:`, { status: response.status, data });
 
       if (!response.ok) {
-        throw new Error(data?.message || `HTTP error! status: ${response.status}`);
+        console.error(`Error ${response.status} en ${endpoint}:`, data);
+        
+        // Si hay errores específicos de validación, los mostramos
+        if (data?.errors && Array.isArray(data.errors)) {
+          console.error('Errores de validación específicos:', data.errors);
+          
+          // Log cada error individualmente para mejor debugging
+          data.errors.forEach((error, index) => {
+            console.error(`Error ${index + 1}:`, error);
+          });
+          
+          const errorMessages = data.errors.map(err => {
+            // Intentar obtener el mensaje del error de diferentes formas
+            return err.message || err.msg || err.error || err.field || JSON.stringify(err);
+          }).join(', ');
+          
+          throw new Error(`Error de validación: ${errorMessages}`);
+        }
+        
+        throw new Error(data?.message || data?.error || `Error de validación`);
       }
 
       return data;
@@ -80,18 +99,22 @@ class AuthService {
 
   // Registrar nuevo usuario
   async register(userData) {
+    console.log('Datos recibidos en authService.register:', userData);
+    
     const payload = {
       email: userData.email,
       password: userData.password,
       confirmPassword: userData.confirmPassword,
       firstName: userData.firstName,
       lastName: userData.lastName,
-      role: userData.role || 'client',
-      phone: userData.phone,
-      acceptTerms: userData.acceptTerms || true,
+      role: userData.role,
+      phone: userData.phone || '', // Siempre como string, incluso si está vacío
+      acceptTerms: userData.acceptTerms !== undefined ? userData.acceptTerms : true,
     };
 
-    return this.makeRequest('/register', {
+    console.log('Payload que se enviará a la API:', payload);
+
+    return this.makeRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -117,7 +140,7 @@ class AuthService {
       refreshToken: refreshToken,
     };
 
-    return this.makeRequest('/refresh', {
+    return this.makeRequest('/auth/refresh', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -129,7 +152,7 @@ class AuthService {
       token: token,
     };
 
-    return this.makeRequest('/verify-email', {
+    return this.makeRequest('/auth/verify-email', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -141,7 +164,7 @@ class AuthService {
       email: email,
     };
 
-    return this.makeRequest('/resend-verification', {
+    return this.makeRequest('/auth/resend-verification', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -153,7 +176,7 @@ class AuthService {
       email: email,
     };
 
-    return this.makeRequest('/forgot-password', {
+    return this.makeRequest('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -167,7 +190,7 @@ class AuthService {
       confirmPassword: confirmPassword,
     };
 
-    return this.makeRequest('/reset-password', {
+    return this.makeRequest('/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -181,7 +204,7 @@ class AuthService {
       confirmNewPassword: confirmNewPassword,
     };
 
-    return this.makeRequest('/change-password', {
+    return this.makeRequest('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify(payload),
     });

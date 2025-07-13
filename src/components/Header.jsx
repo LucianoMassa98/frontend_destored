@@ -1,14 +1,21 @@
 import { useState } from "react";
 import { useAuth } from "../utils/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { UserCircle, LogOut, Settings } from "lucide-react";
 
 const Header = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     setMenuOpen(false);
+  };
+
+  const handleSettings = () => {
+    setMenuOpen(false);
+    navigate('/profile/settings');
   };
 
   return (
@@ -30,7 +37,7 @@ const Header = () => {
             <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50 animate-fade-in">
               <button
                 className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700"
-                onClick={() => { setMenuOpen(false); /* Aquí iría navegación a configuración */ }}
+                onClick={handleSettings}
               >
                 <Settings className="w-5 h-5" />
                 Configuración

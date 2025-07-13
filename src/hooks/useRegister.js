@@ -12,25 +12,40 @@ const useRegister = () => {
     setError(null);
     setData(null);
 
+    console.log('Datos enviados desde useRegister:', userData);
+
     try {
       const response = await register(userData);
       setData(response);
       return response;
     } catch (err) {
-      setError(err.message || 'Error en el registro');
+      console.error('Error en useRegister:', err);
+      
+      // Extraer mensajes específicos de validación
+      let errorMessage = err.message || 'Error en el registro';
+      
+      // Si es un error de validación, intentar extraer detalles más específicos
+      if (errorMessage.includes('Error de validación:')) {
+        errorMessage = errorMessage.replace('Error de validación: ', '');
+      }
+      
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Función simplificada para usuarios básicos
-  const registerBasicUser = async (email, password, role = 'client') => {
+  // Función simplificada para usuarios básicos (ahora con campos requeridos)
+  const registerBasic = async (email, password, firstName, lastName, role = 'client', phone = '') => {
     const userData = {
       email,
       password,
       confirmPassword: password,
+      firstName,
+      lastName,
       role,
+      phone,
       acceptTerms: true,
     };
     return registerUser(userData);
@@ -49,7 +64,7 @@ const useRegister = () => {
 
   return { 
     register: registerUser,           // Registro completo con objeto userData
-    registerBasic: registerBasicUser, // Registro básico
+    registerBasic,                   // Registro básico con campos requeridos
     registerProfessional,            // Registro específico para profesionales
     loading,
     error, 

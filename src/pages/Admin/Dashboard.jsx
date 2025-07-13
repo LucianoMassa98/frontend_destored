@@ -1,5 +1,6 @@
 import { useAuth } from '../../utils/AuthContext';
 import { useState } from 'react';
+import AuthEndpointTester from '../../components/AuthEndpointTester';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -568,6 +569,19 @@ export default function Dashboard() {
     </div>
   );
 
+  const renderAuthTesting = () => (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-2">Testing de Endpoints de Autenticación</h2>
+        <p className="text-gray-300">
+          Herramienta para probar todos los endpoints de autenticación implementados.
+          Útil para debugging y validación durante el desarrollo.
+        </p>
+      </div>
+      <AuthEndpointTester />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
@@ -589,7 +603,8 @@ export default function Dashboard() {
               { id: 'professionals', label: 'Profesionales', icon: '🧑‍💼' },
               { id: 'admins', label: 'Administradores', icon: '👑' },
               { id: 'mentorships', label: 'Mentorías', icon: '🎓' },
-              { id: 'analytics', label: 'Analytics', icon: '📊' }
+              { id: 'analytics', label: 'Analytics', icon: '📊' },
+              { id: 'auth-testing', label: 'Auth Testing', icon: '🔧' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -615,6 +630,7 @@ export default function Dashboard() {
         {activeTab === 'admins' && renderAdmins()}
         {activeTab === 'mentorships' && renderMentorships()}
         {activeTab === 'analytics' && renderAnalytics()}
+        {activeTab === 'auth-testing' && renderAuthTesting()}
       </div>
     </div>
   );
