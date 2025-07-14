@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../utils/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { UserCircle, LogOut, Settings } from "lucide-react";
+import { UserCircle, LogOut, Settings, Home, Briefcase, FileText } from "lucide-react";
 
 const Header = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -16,6 +16,33 @@ const Header = () => {
   const handleSettings = () => {
     setMenuOpen(false);
     navigate('/profile/settings');
+  };
+
+  const handleNavigation = (path) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
+
+  const getHomeRoute = () => {
+    const role = user?.role?.toLowerCase();
+    if (role === 'client' || role === 'cliente') return '/cliente/home';
+    if (role === 'professional' || role === 'profesional') return '/profesional/home';
+    if (role === 'admin') return '/admin/dashboard';
+    if (role === 'gerencia') return '/gerencia/dashboard';
+    return '/';
+  };
+
+  const getProjectsRoute = () => {
+    const role = user?.role?.toLowerCase();
+    if (role === 'client' || role === 'cliente') return '/cliente/proyectos';
+    if (role === 'professional' || role === 'profesional') return '/profesional/proyectos';
+    return null;
+  };
+
+  const getApplicationsRoute = () => {
+    const role = user?.role?.toLowerCase();
+    if (role === 'professional' || role === 'profesional') return '/profesional/aplicaciones';
+    return null;
   };
 
   return (
@@ -35,6 +62,36 @@ const Header = () => {
           </button>
           {menuOpen && (
             <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50 animate-fade-in">
+              <button
+                className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700"
+                onClick={() => handleNavigation(getHomeRoute())}
+              >
+                <Home className="w-5 h-5" />
+                Inicio
+              </button>
+              
+              {getProjectsRoute() && (
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700"
+                  onClick={() => handleNavigation(getProjectsRoute())}
+                >
+                  <Briefcase className="w-5 h-5" />
+                  Proyectos
+                </button>
+              )}
+
+              {getApplicationsRoute() && (
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700"
+                  onClick={() => handleNavigation(getApplicationsRoute())}
+                >
+                  <FileText className="w-5 h-5" />
+                  Mis Aplicaciones
+                </button>
+              )}
+
+              <div className="border-t border-gray-200 my-1"></div>
+              
               <button
                 className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700"
                 onClick={handleSettings}

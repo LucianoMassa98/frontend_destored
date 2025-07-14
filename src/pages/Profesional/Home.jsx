@@ -37,6 +37,57 @@ function ProfesionalHome() {
 
   const renderDashboard = () => (
     <div className="space-y-6">
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a
+            href="/profesional/proyectos"
+            className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <div className="bg-blue-600 p-2 rounded-full mr-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Buscar Proyectos</h4>
+              <p className="text-sm text-gray-600">Encuentra nuevos proyectos</p>
+            </div>
+          </a>
+          
+          <a
+            href="/profesional/aplicaciones"
+            className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <div className="bg-green-600 p-2 rounded-full mr-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Mis Aplicaciones</h4>
+              <p className="text-sm text-gray-600">Revisar estado de aplicaciones</p>
+            </div>
+          </a>
+
+          <div 
+            className="flex items-center p-4 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
+            onClick={() => setActiveTab('profile')}
+          >
+            <div className="bg-purple-600 p-2 rounded-full mr-3">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900">Completar Perfil</h4>
+              <p className="text-sm text-gray-600">Mejora tu visibilidad</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Profile Completion Alert */}
       {!profileData.isComplete && (
         <div className="bg-yellow-600 border border-yellow-500 rounded-lg p-4">

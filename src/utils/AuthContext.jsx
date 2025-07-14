@@ -31,8 +31,9 @@ export const AuthProvider = ({ children }) => {
             ...parsedUser,
             role: parsedUser.role
           };
-          setUser(validUser);
           console.log('Usuario cargado desde localStorage:', validUser);
+          console.log('Rol del usuario:', parsedUser.role);
+          setUser(validUser);
         } else {
           console.log('No hay sesión válida o token expirado');
           // Intentar refrescar token si existe refresh token
@@ -188,6 +189,9 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 'success' && response.data) {
         const { user, accessToken, refreshToken } = response.data;
         
+        console.log('Datos del usuario desde API:', user);
+        console.log('Rol del usuario desde API:', user.role);
+        
         // Asegurar que el usuario tenga una estructura mínima válida
         const validUser = {
           ...user,
@@ -200,7 +204,8 @@ export const AuthProvider = ({ children }) => {
         // Guardar datos del usuario
         setUser(validUser);
         localStorage.setItem('user', JSON.stringify(validUser));
-        console.log('Login exitoso:', validUser);
+        console.log('Login exitoso - Usuario guardado:', validUser);
+        console.log('Rol guardado:', validUser.role);
         
         return response;
       } else {

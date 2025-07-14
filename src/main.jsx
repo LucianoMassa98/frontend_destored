@@ -14,6 +14,9 @@ import Dashboard from './pages/Admin/Dashboard.jsx';
 import GerenciaDashboard from './pages/Gerencia/Dashboard.jsx';
 import ProfesionalHome from './pages/Profesional/Home.jsx';
 import ClienteHome from './pages/Cliente/Home.jsx';
+import ClienteProjectsPage from './pages/Cliente/ProjectsPage.jsx';
+import ProfesionalProjectsPage from './pages/Profesional/ProjectsPage.jsx';
+import ProfesionalApplicationsPage from './pages/Profesional/MyApplicationsPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import VerifyEmailPage from './pages/VerifyEmailPage.jsx';
@@ -46,17 +49,32 @@ function ProtectedRoute({ children, requiredRole }) {
   if (requiredRole) {
     // Normalizar roles para compatibilidad
     let normalizedUserRole = userRole;
-    let normalizedRequiredRole = requiredRole;
+    let normalizedRequiredRole = requiredRole.toLowerCase();
     
     // Mapear roles en español a inglés para comparación
     if (userRole === 'profesional') normalizedUserRole = 'professional';
     if (userRole === 'cliente') normalizedUserRole = 'client';
     
-    if (requiredRole === 'profesional') normalizedRequiredRole = 'professional';
-    if (requiredRole === 'cliente') normalizedRequiredRole = 'client';
+    if (normalizedRequiredRole === 'profesional') normalizedRequiredRole = 'professional';
+    if (normalizedRequiredRole === 'cliente') normalizedRequiredRole = 'client';
     
-    if (normalizedUserRole !== normalizedRequiredRole && userRole !== requiredRole) {
-      console.log(`Rol incorrecto. Requerido: ${requiredRole}, Usuario: ${userRole}`);
+    // Debug logs
+    console.log('ProtectedRoute Debug:', {
+      userRole,
+      normalizedUserRole,
+      requiredRole,
+      normalizedRequiredRole,
+      user
+    });
+    
+    // Permitir acceso si los roles coinciden en cualquier formato
+    const hasAccess = normalizedUserRole === normalizedRequiredRole || 
+                     userRole === requiredRole || 
+                     userRole === normalizedRequiredRole ||
+                     normalizedUserRole === requiredRole;
+    
+    if (!hasAccess) {
+      console.log(`Acceso denegado. Requerido: ${requiredRole}, Usuario: ${userRole}`);
       return <Navigate to="/" replace />;
     }
   }
@@ -199,6 +217,30 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRole="cliente">
             <ClienteHome />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'cliente/proyectos',
+        element: (
+          <ProtectedRoute requiredRole="cliente">
+            <ClienteProjectsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profesional/proyectos',
+        element: (
+          <ProtectedRoute requiredRole="profesional">
+            <ProfesionalProjectsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profesional/aplicaciones',
+        element: (
+          <ProtectedRoute requiredRole="profesional">
+            <ProfesionalApplicationsPage />
           </ProtectedRoute>
         ),
       },
